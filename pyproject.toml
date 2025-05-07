@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "botvang"
+version = "0.1.0"
+description = "A Telegram bot for tracking gold prices"
+authors = [
+    {name = "Developer"}
+]
+readme = "README.md"
+requires-python = ">=3.7"
+license = {text = "MIT"}
+dependencies = [
+    "requests>=2.25.0",
+    "beautifulsoup4>=4.9.0",
+    "python-telegram-bot>=13.0.0",
+    "python-dotenv>=0.19.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0.0",
+    "black>=21.5b2",
+    "flake8>=3.9.0",
+]
+
+[tool.black]
+line-length = 88
+target-version = ["py37"]
+
+[tool.isort]
+profile = "black"
+line_length = 88
