@@ -14,6 +14,7 @@ TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
 # Telegram channel ID (e.g., @YourChannelName)
 TELEGRAM_CHANNEL_ID = os.environ.get('TELEGRAM_CHANNEL_ID')
 
+INTERVAL = os.environ.get("INTERVAL", 3600)
 # Store previous prices to detect changes
 previous_prices = {
     'Bao Tin Manh Hai': None,
@@ -180,7 +181,7 @@ def main():
     updater = Updater(TELEGRAM_BOT_TOKEN)
     
     # Schedule price check every minute
-    updater.job_queue.run_repeating(check_and_send_updates, interval=5, first=1)
+    updater.job_queue.run_repeating(check_and_send_updates, interval=INTERVAL, first=1)
 
     # Start the bot
     updater.start_polling()
