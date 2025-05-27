@@ -167,6 +167,7 @@ def check_and_send_updates():
         divider = "\n----------------------\n"
         combined_message = divider.join(update_messages)
         combined_message += f"\n\nUpdated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        combined_message += f"\n________________________________________________________________________"
         
         # Send message to Slack
         send_to_slack(combined_message)
