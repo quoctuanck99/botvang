@@ -1,20 +1,19 @@
 import requests
 from bs4 import BeautifulSoup
 import traceback
-from telegram.ext import Updater, CommandHandler
 from datetime import datetime
 import os
+import time
+import json
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
 
 # Get credentials from environment variables
-TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
-# Telegram channel ID (e.g., @YourChannelName)
-TELEGRAM_CHANNEL_ID = os.environ.get('TELEGRAM_CHANNEL_ID')
+SLACK_WEBHOOK_URL = os.environ.get('SLACK_WEBHOOK_URL')
 
-INTERVAL = os.environ.get("INTERVAL", 3600)
+INTERVAL = int(os.environ.get("INTERVAL", 3600))
 # Store previous prices to detect changes
 previous_prices = {
     'Bao Tin Manh Hai': None,
@@ -133,7 +132,7 @@ def scrape_gold_prices():
     return results
 
 
-def check_and_send_updates(context):
+def check_and_send_updates():
     global previous_prices
     prices = scrape_gold_prices()
     
@@ -169,23 +168,41 @@ def check_and_send_updates(context):
         combined_message = divider.join(update_messages)
         combined_message += f"\n\nUpdated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
         
-        context.bot.send_message(
-            chat_id=TELEGRAM_CHANNEL_ID,
-            text=combined_message,
-            parse_mode='Markdown'
+        # Send message to Slack
+        send_to_slack(combined_message)
+
+
+def send_to_slack(message):
+    """Send a message to Slack using the webhook URL"""
+    try:
+        # Format message for Slack (Slack uses different markdown syntax)
+        # Replace Telegram's *bold* with Slack's *bold*
+        # We don't need to modify since both use the same syntax for bold
+        
+        payload = {'text': message}
+        response = requests.post(
+            SLACK_WEBHOOK_URL,
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'}
         )
+        response.raise_for_status()
+        print(f"Message sent to Slack, status code: {response.status_code}")
+    except Exception as e:
+        print(f"Error sending message to Slack: {e}")
 
 
 def main():
-    # Initialize the bot
-    updater = Updater(TELEGRAM_BOT_TOKEN)
+    print(f"Starting gold price monitoring service, checking every {INTERVAL} seconds")
     
-    # Schedule price check every minute
-    updater.job_queue.run_repeating(check_and_send_updates, interval=INTERVAL, first=1)
-
-    # Start the bot
-    updater.start_polling()
-    updater.idle()
+    while True:
+        try:
+            check_and_send_updates()
+            print(f"Checked prices at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        except Exception as e:
+            print(f"Error in main loop: {e}")
+        
+        # Sleep for the interval duration
+        time.sleep(INTERVAL)
 
 
 if __name__ == "__main__":
