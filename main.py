@@ -164,10 +164,9 @@ def check_and_send_updates():
     # Send a single message with all updates if any price changed
     # This guarantees a message is sent if at least one source changed
     if any_price_changed:
-        divider = "\n----------------------\n"
-        combined_message = divider.join(update_messages)
+        combined_message = "\n".join(update_messages)
         combined_message += f"\n\nUpdated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-        combined_message += f"\n________________________________________________________________________"
+        combined_message += f"\n==========================================================="
         
         # Send message to Slack
         send_to_slack(combined_message)
