@@ -12,6 +12,7 @@ load_dotenv()
 
 # Get credentials from environment variables
 SLACK_WEBHOOK_URL = os.environ.get('SLACK_WEBHOOK_URL')
+DISCORD_WEBHOOK_URL = os.environ.get('DISCORD_WEBHOOK_URL')
 
 INTERVAL = int(os.environ.get("INTERVAL", 3600))
 # Store previous prices to detect changes
@@ -155,8 +156,7 @@ def check_and_send_updates():
                 f"📊 *{source} Price Update* 📊\n"
                 f"Type: {item['type']}\n"
                 f"Buy Price: {item['buy_price']} VND\n"
-                f"Sell Price: {item['sell_price']} VND\n"
-                f"Website: {source_urls[source]}"
+                f"Sell Price: {item['sell_price']} VND"
             )
             update_messages.append(message)
             previous_prices[source] = current_price
@@ -171,6 +171,9 @@ def check_and_send_updates():
         
         # Send message to Slack
         send_to_slack(combined_message)
+        
+        # Send message to Discord
+        send_to_discord(combined_message)
 
 
 def send_to_slack(message):
@@ -190,6 +193,23 @@ def send_to_slack(message):
         print(f"Message sent to Slack, status code: {response.status_code}")
     except Exception as e:
         print(f"Error sending message to Slack: {e}")
+
+
+def send_to_discord(message):
+    """Send a message to Discord using the webhook URL"""
+    try:
+        # Discord uses a different payload format than Slack
+        payload = {'content': message}
+        
+        response = requests.post(
+            DISCORD_WEBHOOK_URL,
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'}
+        )
+        response.raise_for_status()
+        print(f"Message sent to Discord, status code: {response.status_code}")
+    except Exception as e:
+        print(f"Error sending message to Discord: {e}")
 
 
 def main():
